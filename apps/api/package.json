@@ -1,0 +1,9 @@
+{
+  "name": "@repo/api",
+  "private": true,
+  "scripts": {
+    "dev": "node -e \"console.log('api: todo')\"",
+    "build": "node -e \"console.log('api build: todo')\"",
+    "lint": "node -e \"console.log('api lint: todo')\""
+  }
+}

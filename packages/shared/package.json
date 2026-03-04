@@ -1,0 +1,13 @@
+{
+  "name": "@repo/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "node -e \"console.log('shared: noop')\"",
+    "build": "node -e \"console.log('shared build: noop')\"",
+    "lint": "node -e \"console.log('shared lint: noop')\""
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@repo/bot",
+  "private": true,
+  "scripts": {
+    "dev": "node -e \"console.log('bot: todo')\"",
+    "build": "node -e \"console.log('bot build: todo')\"",
+    "lint": "node -e \"console.log('bot lint: todo')\""
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@repo/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
+  "scripts": {
+    "dev": "node -e \"console.log('ui: noop')\"",
+    "build": "node -e \"console.log('ui build: noop')\"",
+    "lint": "node -e \"console.log('ui lint: noop')\""
+  }
+}
