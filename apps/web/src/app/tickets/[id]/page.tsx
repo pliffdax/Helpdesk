@@ -1,11 +1,15 @@
 import Link from "next/link";
 
-export default async function TicketDetailsPage({
+export function generateStaticParams() {
+  return [{ id: "demo" }, { id: "1" }, { id: "2" }];
+}
+
+export default function TicketDetailsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
