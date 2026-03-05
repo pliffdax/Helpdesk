@@ -37,9 +37,6 @@ jobs:
       - name: Install deps
         run: pnpm i --frozen-lockfile
 
-      - name: Install deps
-        run: pnpm i --frozen-lockfile
-
       - name: Build static export
         run: pnpm -C apps/web build
 
