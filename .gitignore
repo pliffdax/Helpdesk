@@ -5,15 +5,6 @@ node_modules/
 # package manager lockfiles inside nested apps (repo uses pnpm)
 **/package-lock.json
 
-# pnp / yarn
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
 # testing
 coverage/
 **/coverage/
@@ -30,6 +21,14 @@ build/
 dist/
 **/dist/
 
+# turbo
+.turbo/
+
+# env files
+.env*
+!.env.example
+!.env.local.example
+
 # misc
 .DS_Store
 *.pem
@@ -39,10 +38,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# env files
-.env*
-!.env.example
 
 # deployment
 .vercel

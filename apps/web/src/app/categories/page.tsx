@@ -1,27 +1,22 @@
-import Link from "next/link";
+import { CategoryManager } from "@/components/categories/category-manager";
+import { getCategories, getPublicApiBaseUrl } from "@/lib/helpdesk-api";
 
-export default function CategoriesPage() {
+export const dynamic = "force-dynamic";
+
+export default async function CategoriesPage() {
+  const categories = await getCategories();
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">Категорії</h1>
-      <p className="mt-2 text-neutral-600">
-        Заглушка сторінки. У наступних роботах тут буде список категорій та
-        керування ними.
-      </p>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">Категорії</h1>
+        <p className="mt-1 text-sm text-neutral-600">
+          Керування довідником категорій, які використовуються при створенні та фільтрації заявок.
+        </p>
+      </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link
-          href="/tickets"
-          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 transition"
-        >
-          До заявок
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 transition"
-        >
-          На головну
-        </Link>
+      <div className="mt-6">
+        <CategoryManager categories={categories} apiBaseUrl={getPublicApiBaseUrl()} />
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ docs/
 ```
 
 Tooling:
-- **pnpm workspaces** for package management
+- **pnpm workspaces** for package management and filtered app commands (`pnpm dev:web`, `pnpm dev:api`)
 - **Turborepo** for task orchestration (`dev`, `build`, `lint`) across packages
 
 ---

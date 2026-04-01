@@ -6,7 +6,7 @@ import { getTickets } from "@/lib/helpdesk-api";
 export const dynamic = "force-dynamic";
 
 export default async function TicketsPage({
-  searchParams,
+  searchParams
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
@@ -23,7 +23,7 @@ export default async function TicketsPage({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Заявки</h1>
           <p className="mt-1 text-sm text-neutral-600">
-            Перегляд звернень користувачів, фільтрація, статуси та прив&apos;язка до PostgreSQL.
+            Повний список звернень з фільтрацією, переходом у деталі та керуванням через PostgreSQL API.
           </p>
         </div>
 

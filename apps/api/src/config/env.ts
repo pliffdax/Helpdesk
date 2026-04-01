@@ -8,9 +8,16 @@ function required(name: string, fallback?: string) {
   return value;
 }
 
+function parseCorsOrigins(value?: string) {
+  return (value ?? "http://localhost:3000,http://127.0.0.1:3000")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 3001),
   host: process.env.HOST ?? "0.0.0.0",
   databaseUrl: required("DATABASE_URL"),
-  corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+  corsOrigin: parseCorsOrigins(process.env.CORS_ORIGIN),
 };

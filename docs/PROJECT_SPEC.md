@@ -250,3 +250,11 @@ Stage 6 — Деплой
 4.  Use‑case діаграма (планується)
 5.  Адаптивний інтерфейс (реалізовано)
 6.  Лабораторний звіт (в процесі)
+
+
+## Current lab UI coverage
+
+- Tickets page with search and status/priority filters
+- Ticket details page with update/delete actions through the API
+- Categories page with list + create form
+- Users page with list + create form

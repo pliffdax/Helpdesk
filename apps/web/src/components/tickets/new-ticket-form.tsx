@@ -54,7 +54,9 @@ export function NewTicketForm({
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+        const payload = (await response.json().catch(() => null)) as {
+          message?: string;
+        } | null;
         throw new Error(payload?.message ?? "Не вдалося створити заявку");
       }
 
@@ -62,7 +64,9 @@ export function NewTicketForm({
       router.push(`/tickets/${payload.data.id}`);
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Сталася помилка");
+      setError(
+        submitError instanceof Error ? submitError.message : "Сталася помилка",
+      );
     } finally {
       setLoading(false);
     }
@@ -75,7 +79,9 @@ export function NewTicketForm({
         <input
           className={ui.input}
           value={form.title}
-          onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+          onChange={(event) =>
+            setForm((current) => ({ ...current, title: event.target.value }))
+          }
           required
         />
       </label>
@@ -85,7 +91,12 @@ export function NewTicketForm({
         <select
           className={ui.select}
           value={form.categoryId}
-          onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              categoryId: event.target.value,
+            }))
+          }
           required
         >
           {categories.map((category) => (
@@ -101,7 +112,12 @@ export function NewTicketForm({
         <select
           className={ui.select}
           value={form.creatorId}
-          onChange={(event) => setForm((current) => ({ ...current, creatorId: event.target.value }))}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              creatorId: event.target.value,
+            }))
+          }
           required
         >
           {users.map((user) => (
@@ -133,10 +149,13 @@ export function NewTicketForm({
       <label className="grid gap-1">
         <span className="text-sm font-medium">Опис</span>
         <textarea
-          className={ui.textarea}
+          className={`${ui.input} min-h-28 resize-y pt-3 leading-6`}
           value={form.description}
           onChange={(event) =>
-            setForm((current) => ({ ...current, description: event.target.value }))
+            setForm((current) => ({
+              ...current,
+              description: event.target.value,
+            }))
           }
           required
         />

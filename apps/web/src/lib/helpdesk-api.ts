@@ -1,5 +1,6 @@
 export type TicketStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
 export type TicketPriority = "LOW" | "MEDIUM" | "HIGH";
+export type UserRole = "USER" | "AGENT" | "ADMIN";
 
 export type Category = {
   id: number;
@@ -12,7 +13,7 @@ export type User = {
   id: number;
   name: string;
   email: string;
-  role: "USER" | "AGENT" | "ADMIN";
+  role: UserRole;
   createdAt?: string;
 };
 
@@ -60,12 +61,12 @@ const MOCK_TICKETS: Ticket[] = [
       id: 1,
       name: "Ivan Petrenko",
       email: "ivan@example.com",
-      role: "USER",
+      role: "USER"
     },
     category: {
       id: 1,
-      name: "Auth",
-    },
+      name: "Auth"
+    }
   },
   {
     id: 2,
@@ -81,12 +82,12 @@ const MOCK_TICKETS: Ticket[] = [
       id: 1,
       name: "Ivan Petrenko",
       email: "ivan@example.com",
-      role: "USER",
+      role: "USER"
     },
     category: {
       id: 2,
-      name: "UI",
-    },
+      name: "UI"
+    }
   },
   {
     id: 3,
@@ -102,19 +103,19 @@ const MOCK_TICKETS: Ticket[] = [
       id: 3,
       name: "Admin Helpdesk",
       email: "admin@example.com",
-      role: "ADMIN",
+      role: "ADMIN"
     },
     category: {
       id: 3,
-      name: "Infrastructure",
-    },
-  },
+      name: "Infrastructure"
+    }
+  }
 ];
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
-      cache: "no-store",
+      cache: "no-store"
     });
 
     if (!response.ok) {
@@ -169,6 +170,17 @@ export async function getTickets(filters?: {
 export async function getTicketById(id: number) {
   const response = await readJson<{ data: Ticket }>(`/api/tickets/${id}`);
   return response?.data ?? MOCK_TICKETS.find((ticket) => ticket.id === id) ?? null;
+}
+
+export async function getDashboardStats() {
+  const [tickets, categories, users] = await Promise.all([getTickets(), getCategories(), getUsers()]);
+
+  return {
+    tickets: tickets.length,
+    openTickets: tickets.filter((ticket) => ticket.status === "OPEN").length,
+    categories: categories.length,
+    users: users.length
+  };
 }
 
 export function getPublicApiBaseUrl() {

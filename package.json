@@ -3,10 +3,23 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "turbo dev --continue",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "clean": "turbo clean && rm -rf node_modules .turbo"
+    "dev:web": "pnpm --filter @repo/web dev",
+    "dev:api": "pnpm --filter @repo/api dev",
+    "dev:bot": "pnpm --filter @repo/bot dev",
+    "db:up": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/docker/docker-compose.yml down",
+    "db:down:v": "docker compose -f infra/docker/docker-compose.yml down -v",
+    "db:restart": "docker compose -f infra/docker/docker-compose.yml down && docker compose -f infra/docker/docker-compose.yml up -d",
+    "db:reset": "docker compose -f infra/docker/docker-compose.yml down -v && docker compose -f infra/docker/docker-compose.yml up -d",
+    "db:ps": "docker compose -f infra/docker/docker-compose.yml ps",
+    "db:logs": "docker compose -f infra/docker/docker-compose.yml logs -f",
+    "db:logs:postgres": "docker compose -f infra/docker/docker-compose.yml logs -f postgres",
+    "db:check": "docker compose -f infra/docker/docker-compose.yml exec postgres pg_isready -U helpdesk -d helpdesk_db",
+    "db:shell": "docker compose -f infra/docker/docker-compose.yml exec postgres psql -U helpdesk -d helpdesk_db",
+    "prisma:generate": "pnpm --filter @repo/api exec prisma generate",
+    "prisma:push": "pnpm --filter @repo/api exec prisma db push",
+    "prisma:seed": "pnpm --filter @repo/api exec prisma db seed",
+    "sql:demo": "pnpm --filter @repo/api sql:demo"
   },
   "devDependencies": {
     "turbo": "^2.8.0"

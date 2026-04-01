@@ -1,11 +1,11 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import { env } from "./config/env";
+import { Prisma } from "@prisma/client";
 import { healthRoutes } from "./routes/health";
 import { userRoutes } from "./routes/users";
 import { categoryRoutes } from "./routes/categories";
 import { ticketRoutes } from "./routes/tickets";
-import { Prisma } from "@prisma/client";
+import { env } from "./config/env";
 
 export function buildApp() {
   const app = Fastify({
@@ -14,15 +14,22 @@ export function buildApp() {
 
   app.register(cors, {
     origin: env.corsOrigin,
+    methods: "GET,POST,PATCH,DELETE,OPTIONS",
+    allowedHeaders: ["Content-Type"],
+    preflight: true,
+    optionsSuccessStatus: 204,
   });
 
   app.register(healthRoutes);
 
-  app.register(async (api) => {
-    api.register(userRoutes);
-    api.register(categoryRoutes);
-    api.register(ticketRoutes);
-  }, { prefix: "/api" });
+  app.register(
+    async (api) => {
+      api.register(userRoutes);
+      api.register(categoryRoutes);
+      api.register(ticketRoutes);
+    },
+    { prefix: "/api" },
+  );
 
   app.setErrorHandler((error, _request, reply) => {
     requestLog(app, error);
@@ -33,7 +40,9 @@ export function buildApp() {
       }
 
       if (error.code === "P2003") {
-        return reply.status(400).send({ message: "related record does not exist" });
+        return reply
+          .status(400)
+          .send({ message: "related record does not exist" });
       }
 
       if (error.code === "P2025") {
@@ -49,6 +58,11 @@ export function buildApp() {
   return app;
 }
 
-function requestLog(app: ReturnType<typeof Fastify>, error: Error) {
-  app.log.error(error);
+function requestLog(app: ReturnType<typeof Fastify>, error: unknown) {
+  if (error instanceof Error) {
+    app.log.error(error);
+    return;
+  }
+
+  app.log.error({ error }, "Unknown error");
 }

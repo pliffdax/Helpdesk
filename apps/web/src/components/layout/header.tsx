@@ -10,7 +10,8 @@ const NAV: NavItem[] = [
   { href: "/", label: "Головна" },
   { href: "/tickets", label: "Заявки" },
   { href: "/categories", label: "Категорії" },
-  { href: "/profile", label: "Профіль" },
+  { href: "/users", label: "Користувачі" },
+  { href: "/profile", label: "Профіль" }
 ];
 
 function cx(...v: Array<string | false | null | undefined>) {
@@ -38,21 +39,15 @@ export function Header() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-14 items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-2"
-              onClick={onNavClick}
-            >
+            <Link href="/" className="flex items-center gap-2" onClick={onNavClick}>
               <div className="h-8 w-8 rounded-xl bg-neutral-900" />
               <div className="leading-tight">
                 <div className="text-sm font-semibold">Helpdesk</div>
-                <div className="text-xs text-neutral-500 hidden sm:block">
-                  Ticket system
-                </div>
+                <div className="hidden text-xs text-neutral-500 sm:block">Ticket system</div>
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden items-center gap-1 md:flex">
               {NAV.map((it) => {
                 const isActive =
                   activeHref === it.href ||
@@ -66,7 +61,7 @@ export function Header() {
                       "rounded-xl px-3 py-2 text-sm transition",
                       isActive
                         ? "bg-neutral-100 text-neutral-900"
-                        : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900",
+                        : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                     )}
                   >
                     {it.label}
@@ -80,14 +75,14 @@ export function Header() {
             <Link
               href="/tickets/new"
               onClick={onNavClick}
-              className="hidden sm:inline-flex items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 active:translate-y-px transition"
+              className="hidden items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800 active:translate-y-px sm:inline-flex"
             >
               Нова заявка
             </Link>
             <Link
               href="/login"
               onClick={onNavClick}
-              className="hidden sm:inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 active:translate-y-px transition"
+              className="hidden items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px sm:inline-flex"
             >
               Увійти
             </Link>
@@ -95,7 +90,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="md:hidden cursor-pointer inline-flex h-10 w-10 items-center justify-center rounded-xl border hover:bg-neutral-50 transition"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border transition hover:bg-neutral-50 md:hidden"
               aria-label="Відкрити меню"
               aria-expanded={open}
             >
@@ -104,19 +99,16 @@ export function Header() {
                 <span
                   className={cx(
                     "block h-0.5 w-5 bg-neutral-900 transition",
-                    open && "translate-y-1.5 rotate-45",
+                    open && "translate-y-1.5 rotate-45"
                   )}
+                />
+                <span
+                  className={cx("block h-0.5 w-5 bg-neutral-900 transition", open && "opacity-0")}
                 />
                 <span
                   className={cx(
                     "block h-0.5 w-5 bg-neutral-900 transition",
-                    open && "opacity-0",
-                  )}
-                />
-                <span
-                  className={cx(
-                    "block h-0.5 w-5 bg-neutral-900 transition",
-                    open && "-translate-y-1.5 -rotate-45",
+                    open && "-translate-y-1.5 -rotate-45"
                   )}
                 />
               </div>
@@ -126,8 +118,8 @@ export function Header() {
 
         <div
           className={cx(
-            "md:hidden overflow-hidden transition-[max-height,opacity] duration-200",
-            open ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+            "overflow-hidden transition-[max-height,opacity] duration-200 md:hidden",
+            open ? "max-h-[32rem] opacity-100" : "max-h-0 opacity-0"
           )}
         >
           <div className="pb-4 pt-2">
@@ -143,9 +135,7 @@ export function Header() {
                     onClick={onNavClick}
                     className={cx(
                       "rounded-xl px-3 py-2 text-sm transition",
-                      isActive
-                        ? "bg-neutral-100 text-neutral-900"
-                        : "text-neutral-700 hover:bg-neutral-50",
+                      isActive ? "bg-neutral-100 text-neutral-900" : "text-neutral-700 hover:bg-neutral-50"
                     )}
                   >
                     {it.label}
@@ -158,14 +148,14 @@ export function Header() {
               <Link
                 href="/tickets/new"
                 onClick={onNavClick}
-                className="flex-1 inline-flex items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 active:translate-y-px transition"
+                className="inline-flex flex-1 items-center justify-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-800 active:translate-y-px"
               >
                 Нова заявка
               </Link>
               <Link
                 href="/login"
                 onClick={onNavClick}
-                className="flex-1 inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 active:translate-y-px transition"
+                className="inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px"
               >
                 Увійти
               </Link>

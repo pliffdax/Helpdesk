@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { getDashboardStats } from "@/lib/helpdesk-api";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const stats = await getDashboardStats();
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <section className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -8,148 +13,125 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-neutral-600">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Ticket system / Helpdesk
+              Helpdesk / PostgreSQL + Prisma + Fastify
             </div>
 
             <h1 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl">
-              Підтримка без хаосу: заявки, статуси, категорії — в одному місці
+              Helpdesk для лабораторної: жива база, API-маршрути та робочий frontend
             </h1>
 
             <p className="mt-3 text-neutral-600">
-              Helpdesk допомагає фіксувати звернення користувачів, не губити
-              важливе та прозоро відстежувати прогрес: від створення заявки до
-              закриття.
+              Система демонструє зв&apos;язок між таблицями users, categories і tickets,
+              підтримує CRUD для заявок та дає окремі сторінки для перевірки API безпосередньо з UI.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/tickets/new"
-                className="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition"
+                className="inline-flex items-center justify-center rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
               >
                 Створити заявку
               </Link>
 
               <Link
                 href="/tickets"
-                className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 transition"
+                className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50"
               >
                 Перейти до заявок
               </Link>
             </div>
-
-            <div className="mt-4 text-xs text-neutral-500">
-              У поточній лабораторній реалізовано UI та адаптивність.
-              Backend/авторизація — наступні етапи.
-            </div>
           </div>
 
-          <div className="w-full md:w-90">
-            <div className="rounded-2xl border bg-neutral-50 p-5">
-              <div className="text-sm font-medium">Що можна зробити зараз</div>
-
-              <ul className="mt-3 space-y-2 text-sm text-neutral-700">
-                <li className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-neutral-400" />
-                  Відкрити список заявок
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-neutral-400" />
-                  Переглянути деталі заявки
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-neutral-400" />
-                  Створити заявку через форму
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-neutral-400" />
-                  Перевірити адаптивне меню (бургер)
-                </li>
-              </ul>
-
-              <div className="mt-4 rounded-xl border bg-white p-3 text-xs text-neutral-600">
-                Порада: зроби скріни hero + mobile burger — це прям жирний плюс
-                для ЛР.
-              </div>
-            </div>
+          <div className="grid w-full gap-3 sm:grid-cols-2 md:w-[26rem]">
+            <StatCard value={stats.tickets} label="Усього заявок" />
+            <StatCard value={stats.openTickets} label="Відкритих заявок" />
+            <StatCard value={stats.categories} label="Категорій" />
+            <StatCard value={stats.users} label="Користувачів" />
           </div>
         </div>
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold">Навіщо цей сервіс</h2>
-        <p className="mt-2 text-neutral-600">
-          Щоб звернення не губилися, а обробка була передбачуваною та прозорою.
-        </p>
-
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-xl font-semibold">Що вже можна показати на захисті</h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FeatureCard
-            title="Єдиний журнал звернень"
-            desc="Заявки зібрані в одному місці: список, деталі, історія."
+            title="Заявки"
+            desc="Список, фільтри, перегляд деталей, зміна статусу та видалення."
+            href="/tickets"
           />
           <FeatureCard
-            title="Категорії та статуси"
-            desc="Класифікація заявок і контроль прогресу (Open → Closed)."
+            title="Нова заявка"
+            desc="Форма створення з підстановкою реальних users і categories."
+            href="/tickets/new"
           />
           <FeatureCard
-            title="Адаптивний інтерфейс"
-            desc="Зручно і на desktop, і на телефоні: бургер-меню та адаптивна верстка."
+            title="Категорії"
+            desc="Окрема сторінка довідника та додавання нових категорій."
+            href="/categories"
+          />
+          <FeatureCard
+            title="Користувачі"
+            desc="Перегляд таблиці users і швидка форма для POST /api/users."
+            href="/users"
           />
         </div>
       </section>
 
       <section className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Як це працює</h2>
+        <h2 className="text-xl font-semibold">Як працює схема даних</h2>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <StepCard
             step="1"
-            title="Створи заявку"
-            desc="Опиши проблему або запит і обери категорію."
+            title="User"
+            desc="Один користувач може створити багато заявок, тому між users і tickets реалізовано One-to-Many."
           />
           <StepCard
             step="2"
-            title="Відстежуй статус"
-            desc="Заявка рухається по статусах під час обробки."
+            title="Category"
+            desc="Кожна заявка належить до однієї категорії, а категорія містить багато заявок."
           />
           <StepCard
             step="3"
-            title="Закрий звернення"
-            desc="Після вирішення заявка переходить у завершений стан."
+            title="Ticket"
+            desc="У заявці зберігаються title, description, status, priority і зовнішні ключі на автора та категорію."
           />
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href="/tickets/new"
-            className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 transition"
-          >
-            Почати з заявки
-          </Link>
-          <Link
-            href="/about"
-            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium shadow-sm hover:bg-neutral-50 transition"
-          >
-            Дізнатись більше
-          </Link>
         </div>
       </section>
     </div>
   );
 }
 
-function FeatureCard({ title, desc }: { title: string; desc: string }) {
+function StatCard({ value, label }: { value: number; label: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border bg-neutral-50 p-5">
+      <div className="text-2xl font-semibold">{value}</div>
+      <div className="mt-1 text-sm text-neutral-600">{label}</div>
+    </div>
+  );
+}
+
+function FeatureCard({
+  title,
+  desc,
+  href
+}: {
+  title: string;
+  desc: string;
+  href: string;
+}) {
+  return (
+    <Link href={href} className="rounded-2xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="text-base font-semibold">{title}</div>
       <p className="mt-2 text-sm text-neutral-600">{desc}</p>
-    </div>
+    </Link>
   );
 }
 
 function StepCard({
   step,
   title,
-  desc,
+  desc
 }: {
   step: string;
   title: string;
