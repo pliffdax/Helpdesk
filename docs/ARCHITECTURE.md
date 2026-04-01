@@ -15,7 +15,7 @@ Repository root: `helpdesk/`
 ```
 apps/
   web/        # Next.js frontend (App Router)
-  api/        # backend API (planned)
+  api/        # Fastify backend API (Lab 2 core implemented)
   bot/        # Telegram bot (planned)
 
 packages/
@@ -64,7 +64,7 @@ Responsiveness:
 
 ---
 
-## 3. Backend Architecture (Planned)
+## 3. Backend Architecture (Core Implemented)
 
 Architecture style: **Layered Architecture**
 
@@ -74,48 +74,48 @@ Layers:
 - Repository layer
 - Database layer
 
-Main modules (planned):
-- Auth module
+Main modules:
 - Users module
 - Tickets module
-- Comments module
 - Categories module
+
+Implemented approach for Lab 2:
+- Fastify routes as controller layer
+- Prisma Client as data-access layer
+- PostgreSQL as primary relational database
+- Raw SQL script via `pg` for direct query demonstration
 
 ---
 
-## 4. Database (Planned)
+## 4. Database (Core Implemented)
 
 Database: **PostgreSQL**  
 ORM: **Prisma**
 
-Main entities:
+Main entities used in Lab 2:
 - `User`
 - `Ticket`
 - `Category`
-- `Comment`
-- `StatusHistory`
 
 Relations:
-- User → Ticket (creator)
-- User → Ticket (assigned)
-- Ticket → Comment
-- Ticket → Category
+- User → Ticket (creator, One-to-Many)
+- Category → Ticket (One-to-Many)
 
 ---
 
-## 5. API Structure (Planned)
+## 5. API Structure (Implemented for Lab 2)
 
 Example endpoints:
-- `POST /auth/login`
-- `POST /auth/register`
-
-- `GET /tickets`
-- `POST /tickets`
-- `GET /tickets/:id`
-- `PATCH /tickets/:id/status`
-
-- `POST /comments`
-- `GET /users`
+- `GET /health`
+- `GET /api/users`
+- `POST /api/users`
+- `GET /api/categories`
+- `POST /api/categories`
+- `GET /api/tickets`
+- `POST /api/tickets`
+- `GET /api/tickets/:id`
+- `PATCH /api/tickets/:id`
+- `DELETE /api/tickets/:id`
 
 ---
 
@@ -139,10 +139,8 @@ Deployment idea:
 
 ## 7. Docker Infrastructure (Planned)
 
-docker-compose services (target):
+docker-compose services (current minimum):
 - postgres
-- api
-- web
 
 Future:
 - redis

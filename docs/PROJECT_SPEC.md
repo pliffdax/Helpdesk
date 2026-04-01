@@ -38,7 +38,7 @@ _Last update: 2026-03-04_
 
 Структура (актуальна):
 - `apps/web` — фронтенд (Next.js)
-- `apps/api` — бекенд API (планується)
+- `apps/api` — бекенд API на Fastify + Prisma (реалізовано базове ядро для Lab 2)
 - `apps/bot` — Telegram bot (планується)
 - `packages/shared` — спільні типи/DTO (планується)
 - `packages/ui` — UI компоненти (планується)
@@ -56,10 +56,10 @@ Frontend:
 
 Backend (план):
 - Node.js
-- NestJS або Fastify
+- Fastify
 - Prisma ORM
 
-Database (план):
+Database:
 - PostgreSQL
 
 DevOps (план):
@@ -85,7 +85,8 @@ DevOps (план):
 7.  Побудувати ER‑діаграму
 8.  Реалізувати адаптивний UI
 9.  Реалізувати backend API
-10. Розгорнути проєкт
+10. Підключити PostgreSQL та ORM
+11. Продемонструвати CRUD і прямі SQL-запити з Node.js
 
 ---
 
@@ -232,10 +233,12 @@ Stage 6 — Деплой
 - Сторінки: `/`, `/tickets`, `/tickets/[id]`, `/tickets/new`
 - Єдина палітра/стилі через `src/components/ui/ui.ts`
 
-Далі (найближчі кроки):
-- Додати сторінки-заглушки: `/categories`, `/profile`, `/login` (щоб меню не вело в 404)
-- Підготувати use-case та ER діаграми
-- Перейти до backend: API + БД + Prisma, інтеграція фронта з API
+Готово в межах Lab 2:
+- Fastify API в `apps/api`
+- Prisma schema та PostgreSQL-моделі `User`, `Category`, `Ticket`
+- CRUD для заявок
+- Демо прямих SQL-запитів через `pg`
+- Інтеграція сторінок `/tickets`, `/tickets/[id]`, `/tickets/new` з API або fallback-даними
 
 ---
 

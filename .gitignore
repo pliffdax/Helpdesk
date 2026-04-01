@@ -1,7 +1,11 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
+node_modules/
+**/node_modules/
+
+# package manager lockfiles inside nested apps (repo uses pnpm)
+**/package-lock.json
+
+# pnp / yarn
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,14 +15,20 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
+**/coverage/
 
 # next.js
-/.next/
-/out/
+.next/
+**/.next/
+out/
+**/out/
 
-# production
-/build
+# build
+build/
+**/build/
+dist/
+**/dist/
 
 # misc
 .DS_Store
@@ -30,10 +40,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
-# vercel
+# deployment
 .vercel
 
 # typescript
