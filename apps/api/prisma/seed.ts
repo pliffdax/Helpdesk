@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient, Priority, Role, Status } from "@prisma/client";
+import { hashPassword } from "../src/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,7 @@ async function main() {
       data: {
         name: "Ivan Petrenko",
         email: "ivan@example.com",
+        passwordHash: await hashPassword("password123"),
         role: Role.USER,
       },
     }),
@@ -20,6 +22,7 @@ async function main() {
       data: {
         name: "Olena Moroz",
         email: "olena@example.com",
+        passwordHash: await hashPassword("password123"),
         role: Role.AGENT,
       },
     }),
@@ -27,6 +30,7 @@ async function main() {
       data: {
         name: "Admin Helpdesk",
         email: "admin@example.com",
+        passwordHash: await hashPassword("password123"),
         role: Role.ADMIN,
       },
     }),

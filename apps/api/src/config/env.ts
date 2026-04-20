@@ -20,4 +20,6 @@ export const env = {
   host: process.env.HOST ?? "0.0.0.0",
   databaseUrl: required("DATABASE_URL"),
   corsOrigin: parseCorsOrigins(process.env.CORS_ORIGIN),
+  authTokenSecret: required("AUTH_TOKEN_SECRET", "helpdesk-lab3-secret"),
+  authTokenTtlSeconds: Number(process.env.AUTH_TOKEN_TTL_SECONDS ?? 60 * 60 * 8),
 };

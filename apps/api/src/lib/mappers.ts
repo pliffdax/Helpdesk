@@ -1,6 +1,7 @@
 import {
   Category,
   Priority,
+  Role,
   Status,
   Ticket,
   User,
@@ -14,6 +15,7 @@ export const statusValues: Status[] = [
 ];
 
 export const priorityValues: Priority[] = ["LOW", "MEDIUM", "HIGH"];
+export const roleValues: Role[] = ["USER", "AGENT", "ADMIN"];
 
 export type TicketWithRelations = Ticket & {
   creator: Pick<User, "id" | "name" | "email" | "role">;
@@ -22,6 +24,21 @@ export type TicketWithRelations = Ticket & {
 
 export function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+export function isEmail(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+  );
+}
+
+export function isRole(value: unknown): value is Role {
+  return typeof value === "string" && roleValues.includes(value as Role);
+}
+
+export function isStrongPassword(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 8;
 }
 
 export function isStatus(value: unknown): value is Status {

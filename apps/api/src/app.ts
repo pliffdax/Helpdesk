@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { Prisma } from "@prisma/client";
 import { healthRoutes } from "./routes/health";
+import { authRoutes } from "./routes/auth";
 import { userRoutes } from "./routes/users";
 import { categoryRoutes } from "./routes/categories";
 import { ticketRoutes } from "./routes/tickets";
@@ -15,7 +16,7 @@ export function buildApp() {
   app.register(cors, {
     origin: env.corsOrigin,
     methods: "GET,POST,PATCH,DELETE,OPTIONS",
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     preflight: true,
     optionsSuccessStatus: 204,
   });
@@ -24,6 +25,7 @@ export function buildApp() {
 
   app.register(
     async (api) => {
+      api.register(authRoutes);
       api.register(userRoutes);
       api.register(categoryRoutes);
       api.register(ticketRoutes);
