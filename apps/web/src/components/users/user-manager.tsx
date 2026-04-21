@@ -8,6 +8,8 @@ import type { User, UserRole } from "@/lib/helpdesk-api";
 type FormState = {
   name: string;
   email: string;
+  password: string;
+  passwordConfirmation: string;
   role: UserRole;
 };
 
@@ -22,6 +24,8 @@ export function UserManager({
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
+    password: "",
+    passwordConfirmation: "",
     role: "USER"
   });
   const [loading, setLoading] = useState(false);
@@ -33,6 +37,10 @@ export function UserManager({
     setError(null);
 
     try {
+      if (form.password !== form.passwordConfirmation) {
+        throw new Error("Паролі не збігаються");
+      }
+
       const response = await fetch(`${apiBaseUrl}/api/users`, {
         method: "POST",
         headers: {
@@ -49,6 +57,8 @@ export function UserManager({
       setForm({
         name: "",
         email: "",
+        password: "",
+        passwordConfirmation: "",
         role: "USER"
       });
       router.refresh();
@@ -73,7 +83,7 @@ export function UserManager({
             <thead className="bg-neutral-50 text-neutral-600">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">ID</th>
-                <th className="px-4 py-3 text-left font-medium">Ім'я</th>
+                <th className="px-4 py-3 text-left font-medium">Ім&apos;я</th>
                 <th className="px-4 py-3 text-left font-medium">Email</th>
                 <th className="px-4 py-3 text-left font-medium">Роль</th>
               </tr>
@@ -101,7 +111,7 @@ export function UserManager({
         </div>
 
         <label className="grid gap-1">
-          <span className="text-sm font-medium">Ім'я</span>
+            <span className="text-sm font-medium">Ім&apos;я</span>
           <input
             className={ui.input}
             value={form.name}
@@ -117,6 +127,32 @@ export function UserManager({
             className={ui.input}
             value={form.email}
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+            required
+          />
+        </label>
+
+        <label className="grid gap-1">
+          <span className="text-sm font-medium">Пароль</span>
+          <input
+            type="password"
+            className={ui.input}
+            value={form.password}
+            onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+            minLength={8}
+            required
+          />
+        </label>
+
+        <label className="grid gap-1">
+          <span className="text-sm font-medium">Підтвердження пароля</span>
+          <input
+            type="password"
+            className={ui.input}
+            value={form.passwordConfirmation}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, passwordConfirmation: event.target.value }))
+            }
+            minLength={8}
             required
           />
         </label>

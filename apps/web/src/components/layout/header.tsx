@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { clearSession, getStoredSession } from "@/lib/auth";
 
 type NavItem = { href: string; label: string };
 
@@ -20,7 +21,9 @@ function cx(...v: Array<string | false | null | undefined>) {
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<ReturnType<typeof getStoredSession>>(null);
 
   const activeHref = useMemo(() => pathname ?? "/", [pathname]);
 
@@ -32,7 +35,28 @@ export function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    const syncSession = () => setSession(getStoredSession());
+
+    syncSession();
+
+    window.addEventListener("helpdesk-auth-change", syncSession);
+    window.addEventListener("storage", syncSession);
+
+    return () => {
+      window.removeEventListener("helpdesk-auth-change", syncSession);
+      window.removeEventListener("storage", syncSession);
+    };
+  }, []);
+
   const onNavClick = () => setOpen(false);
+
+  const onLogout = () => {
+    clearSession();
+    onNavClick();
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur">
@@ -72,6 +96,12 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-2">
+            {session?.user ? (
+              <div className="hidden text-right sm:block">
+                <div className="text-sm font-medium text-neutral-900">{session.user.name}</div>
+                <div className="text-xs text-neutral-500">{session.user.role}</div>
+              </div>
+            ) : null}
             <Link
               href="/tickets/new"
               onClick={onNavClick}
@@ -79,13 +109,23 @@ export function Header() {
             >
               Нова заявка
             </Link>
-            <Link
-              href="/login"
-              onClick={onNavClick}
-              className="hidden items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px sm:inline-flex"
-            >
-              Увійти
-            </Link>
+            {session?.user ? (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="hidden items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px sm:inline-flex"
+              >
+                Вийти
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={onNavClick}
+                className="hidden items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px sm:inline-flex"
+              >
+                Увійти
+              </Link>
+            )}
 
             <button
               type="button"
@@ -152,13 +192,23 @@ export function Header() {
               >
                 Нова заявка
               </Link>
-              <Link
-                href="/login"
-                onClick={onNavClick}
-                className="inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px"
-              >
-                Увійти
-              </Link>
+              {session?.user ? (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px"
+                >
+                  Вийти
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={onNavClick}
+                  className="inline-flex flex-1 items-center justify-center rounded-xl border px-3 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-50 active:translate-y-px"
+                >
+                  Увійти
+                </Link>
+              )}
             </div>
           </div>
         </div>

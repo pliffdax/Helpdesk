@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { TicketList } from "@/components/tickets/ticket-list";
+import { getTickets } from "@/lib/helpdesk-api";
 
-export default function TicketsPage() {
+export default async function TicketsPage() {
+  const tickets = await getTickets();
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -23,7 +26,7 @@ export default function TicketsPage() {
       </div>
 
       <div className="mt-6">
-        <TicketList />
+        <TicketList tickets={tickets} filters={{}} />
       </div>
     </div>
   );
