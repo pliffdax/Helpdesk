@@ -1,14 +1,20 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
+import { env } from "../config/env";
 import {
   isEmail,
   isNonEmptyString,
   isStrongPassword,
 } from "../lib/mappers";
 import {
+  clearRefreshTokenCookie,
   createAccessToken,
+  createRefreshToken,
+  getRefreshToken,
+  hashRefreshToken,
   hashPassword,
   requireAuth,
+  setRefreshTokenCookie,
   verifyPassword,
 } from "../lib/auth";
 
@@ -25,6 +31,61 @@ async function getCurrentAuthUser(userId: number) {
     where: { id: userId },
     select: userSelect,
   });
+}
+
+async function issueRefreshSession(userId: number) {
+  const refreshToken = createRefreshToken();
+  const expiresAt = new Date(Date.now() + env.refreshTokenTtlSeconds * 1000);
+
+  await prisma.authSession.create({
+    data: {
+      userId,
+      refreshTokenHash: hashRefreshToken(refreshToken),
+      expiresAt,
+    },
+  });
+
+  return refreshToken;
+}
+
+async function rotateRefreshSession(refreshToken: string) {
+  const now = new Date();
+  const session = await prisma.authSession.findUnique({
+    where: {
+      refreshTokenHash: hashRefreshToken(refreshToken),
+    },
+    include: {
+      user: {
+        select: userSelect,
+      },
+    },
+  });
+
+  if (!session || session.revokedAt || session.expiresAt <= now) {
+    return null;
+  }
+
+  const nextRefreshToken = createRefreshToken();
+  const nextExpiresAt = new Date(Date.now() + env.refreshTokenTtlSeconds * 1000);
+
+  await prisma.$transaction([
+    prisma.authSession.update({
+      where: { id: session.id },
+      data: { revokedAt: now },
+    }),
+    prisma.authSession.create({
+      data: {
+        userId: session.userId,
+        refreshTokenHash: hashRefreshToken(nextRefreshToken),
+        expiresAt: nextExpiresAt,
+      },
+    }),
+  ]);
+
+  return {
+    refreshToken: nextRefreshToken,
+    user: session.user,
+  };
 }
 
 export async function authRoutes(app: FastifyInstance) {
@@ -60,6 +121,8 @@ export async function authRoutes(app: FastifyInstance) {
       },
       select: userSelect,
     });
+    const refreshToken = await issueRefreshSession(user.id);
+    setRefreshTokenCookie(reply, refreshToken);
 
     return reply.status(201).send({
       data: {
@@ -86,6 +149,8 @@ export async function authRoutes(app: FastifyInstance) {
     if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
       return reply.status(401).send({ message: "invalid email or password" });
     }
+    const refreshToken = await issueRefreshSession(user.id);
+    setRefreshTokenCookie(reply, refreshToken);
 
     return {
       data: {
@@ -97,6 +162,31 @@ export async function authRoutes(app: FastifyInstance) {
           role: user.role,
           createdAt: user.createdAt,
         },
+      },
+    };
+  });
+
+  app.post("/auth/refresh", async (request, reply) => {
+    const refreshToken = getRefreshToken(request);
+
+    if (!refreshToken) {
+      clearRefreshTokenCookie(reply);
+      return reply.status(401).send({ message: "refresh token is required" });
+    }
+
+    const rotated = await rotateRefreshSession(refreshToken);
+
+    if (!rotated) {
+      clearRefreshTokenCookie(reply);
+      return reply.status(401).send({ message: "invalid or expired refresh token" });
+    }
+
+    setRefreshTokenCookie(reply, rotated.refreshToken);
+
+    return {
+      data: {
+        accessToken: createAccessToken(rotated.user),
+        user: rotated.user,
       },
     };
   });
@@ -203,7 +293,22 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.status(204).send();
   });
 
-  app.post("/auth/logout", { preHandler: requireAuth }, async (_, reply) => {
+  app.post("/auth/logout", async (request, reply) => {
+    const refreshToken = getRefreshToken(request);
+
+    if (refreshToken) {
+      await prisma.authSession.updateMany({
+        where: {
+          refreshTokenHash: hashRefreshToken(refreshToken),
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: new Date(),
+        },
+      });
+    }
+
+    clearRefreshTokenCookie(reply);
     return reply.status(204).send();
   });
 }

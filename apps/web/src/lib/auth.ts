@@ -1,10 +1,11 @@
 import {
   AUTH_COOKIE_NAME,
+  AUTH_REFRESH_COOKIE_NAME,
   AUTH_ROLE_COOKIE_NAME,
   AUTH_STORAGE_KEY,
 } from "@/lib/auth-constants";
 
-export { AUTH_COOKIE_NAME, AUTH_ROLE_COOKIE_NAME, AUTH_STORAGE_KEY };
+export { AUTH_COOKIE_NAME, AUTH_REFRESH_COOKIE_NAME, AUTH_ROLE_COOKIE_NAME, AUTH_STORAGE_KEY };
 
 export type AuthUser = {
   id: number;
@@ -51,7 +52,7 @@ export function getStoredSession() {
 
 export function storeSession(session: AuthSession) {
   window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-  setCookie(AUTH_COOKIE_NAME, session.accessToken, 60 * 60 * 8);
+  setCookie(AUTH_COOKIE_NAME, session.accessToken, 60 * 15);
   setCookie(AUTH_ROLE_COOKIE_NAME, session.user.role, 60 * 60 * 8);
   emitAuthChange();
 }
@@ -59,6 +60,7 @@ export function storeSession(session: AuthSession) {
 export function clearSession() {
   window.localStorage.removeItem(AUTH_STORAGE_KEY);
   clearCookie(AUTH_COOKIE_NAME);
+  clearCookie(AUTH_REFRESH_COOKIE_NAME);
   clearCookie(AUTH_ROLE_COOKIE_NAME);
   emitAuthChange();
 }

@@ -27,16 +27,32 @@ enum Priority {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  passwordHash String? @map("password_hash")
-  role      Role     @default(USER)
-  tickets   Ticket[]
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  passwordHash String?       @map("password_hash")
+  role         Role          @default(USER)
+  tickets      Ticket[]
+  authSessions AuthSession[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model AuthSession {
+  id               String    @id @default(cuid())
+  userId           Int       @map("user_id")
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
 }
 
 model Category {

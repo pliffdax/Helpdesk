@@ -17,6 +17,7 @@ export function buildApp() {
     origin: env.corsOrigin,
     methods: "GET,POST,PATCH,DELETE,OPTIONS",
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
     preflight: true,
     optionsSuccessStatus: 204,
   });

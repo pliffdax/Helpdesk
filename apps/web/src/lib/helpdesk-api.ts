@@ -40,6 +40,15 @@ export type Ticket = {
 const API_BASE_URL =
   process.env.HELPDESK_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
 
+class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 const MOCK_USERS: User[] = [
   { id: 1, name: "Ivan Petrenko", email: "ivan@example.com", role: "USER" },
   { id: 2, name: "Olena Moroz", email: "olena@example.com", role: "AGENT" },
@@ -145,11 +154,12 @@ async function sendJson<T>(path: string, options?: RequestInit): Promise<T | nul
     ...options,
     headers,
     cache: "no-store",
+    credentials: "include",
   });
 
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(payload?.message ?? "Request failed");
+    throw new ApiRequestError(payload?.message ?? "Request failed", response.status);
   }
 
   if (response.status === 204) {
@@ -157,6 +167,51 @@ async function sendJson<T>(path: string, options?: RequestInit): Promise<T | nul
   }
 
   return (await response.json()) as T;
+}
+
+async function refreshSession() {
+  const response = await sendJson<AuthResponse>("/api/auth/refresh", {
+    method: "POST",
+  });
+
+  if (!response) {
+    throw new Error("Refresh failed");
+  }
+
+  return response.data;
+}
+
+async function sendAuthJson<T>(
+  path: string,
+  token: string,
+  options?: RequestInit,
+): Promise<{ data: T; session?: AuthResponse["data"] }> {
+  try {
+    const data = await sendJson<T>(path, {
+      ...options,
+      headers: {
+        ...(options?.headers ?? {}),
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return { data: data as T };
+  } catch (error) {
+    if (!(error instanceof ApiRequestError) || error.status !== 401) {
+      throw error;
+    }
+
+    const session = await refreshSession();
+    const data = await sendJson<T>(path, {
+      ...options,
+      headers: {
+        ...(options?.headers ?? {}),
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    });
+
+    return { data: data as T, session };
+  }
 }
 
 export async function getUsers() {
@@ -253,17 +308,11 @@ export async function loginUser(payload: {
 }
 
 export async function getCurrentUser(token: string) {
-  const response = await sendJson<{ data: User }>("/api/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response) {
-    throw new Error("User fetch failed");
-  }
-
-  return response.data;
+  const response = await sendAuthJson<{ data: User }>("/api/auth/me", token);
+  return {
+    user: response.data.data,
+    session: response.session,
+  };
 }
 
 export async function updateProfile(
@@ -273,19 +322,16 @@ export async function updateProfile(
     email: string;
   },
 ) {
-  const response = await sendJson<AuthResponse>("/api/auth/profile", {
+  const response = await sendAuthJson<AuthResponse>(
+    "/api/auth/profile",
+    token,
+    {
     method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(payload),
-  });
+    },
+  );
 
-  if (!response) {
-    throw new Error("Profile update failed");
-  }
-
-  return response.data;
+  return response.data.data;
 }
 
 export async function changePassword(
@@ -296,13 +342,16 @@ export async function changePassword(
     newPasswordConfirmation: string;
   },
 ) {
-  await sendJson("/api/auth/change-password", {
+  const response = await sendAuthJson<null>(
+    "/api/auth/change-password",
+    token,
+    {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(payload),
-  });
+    },
+  );
+
+  return response.session;
 }
 
 export async function logoutUser(token: string) {

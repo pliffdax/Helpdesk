@@ -5,6 +5,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { env } from "../config/env";
 
 const scrypt = promisify(scryptCallback);
+export const refreshTokenCookieName = "helpdesk_refresh_token";
 
 type TokenPayload = {
   sub: number;
@@ -60,6 +61,16 @@ export async function verifyPassword(password: string, passwordHash?: string | n
   }
 
   return timingSafeEqual(storedBuffer, derivedKey);
+}
+
+export function createRefreshToken() {
+  return randomBytes(48).toString("base64url");
+}
+
+export function hashRefreshToken(refreshToken: string) {
+  return createHmac("sha256", env.authTokenSecret)
+    .update(refreshToken)
+    .digest("hex");
 }
 
 export function createAccessToken(user: {
@@ -135,6 +146,49 @@ function getBearerToken(request: FastifyRequest) {
   }
 
   return authorization.slice("Bearer ".length).trim();
+}
+
+function parseCookies(header?: string) {
+  if (!header) {
+    return {};
+  }
+
+  return header.split(";").reduce<Record<string, string>>((cookies, part) => {
+    const [name, ...valueParts] = part.trim().split("=");
+
+    if (name) {
+      cookies[name] = decodeURIComponent(valueParts.join("="));
+    }
+
+    return cookies;
+  }, {});
+}
+
+export function getRefreshToken(request: FastifyRequest) {
+  return parseCookies(request.headers.cookie)[refreshTokenCookieName] ?? null;
+}
+
+export function setRefreshTokenCookie(
+  reply: FastifyReply,
+  refreshToken: string,
+  maxAgeSeconds = env.refreshTokenTtlSeconds,
+) {
+  const cookie = [
+    `${refreshTokenCookieName}=${encodeURIComponent(refreshToken)}`,
+    "Path=/",
+    "HttpOnly",
+    "SameSite=Lax",
+    `Max-Age=${maxAgeSeconds}`,
+  ].join("; ");
+
+  reply.header("Set-Cookie", cookie);
+}
+
+export function clearRefreshTokenCookie(reply: FastifyReply) {
+  reply.header(
+    "Set-Cookie",
+    `${refreshTokenCookieName}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
+  );
 }
 
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply) {

@@ -51,7 +51,11 @@ export function ProfileManager() {
     }
 
     getCurrentUser(token)
-      .then((currentUser) => {
+      .then(({ user: currentUser, session }) => {
+        if (session) {
+          storeSession(session);
+        }
+
         setUser(currentUser);
         setProfileForm({
           name: currentUser.name,
@@ -107,7 +111,12 @@ export function ProfileManager() {
     setMessage(null);
 
     try {
-      await changePassword(token, passwordForm);
+      const session = await changePassword(token, passwordForm);
+
+      if (session) {
+        storeSession(session);
+      }
+
       setPasswordForm({
         currentPassword: "",
         newPassword: "",

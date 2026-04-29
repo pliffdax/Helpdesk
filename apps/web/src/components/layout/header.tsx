@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { clearSession, getStoredSession } from "@/lib/auth";
+import { logoutUser } from "@/lib/helpdesk-api";
+import { clearSession, getAccessToken, getStoredSession } from "@/lib/auth";
 
 type NavItem = { href: string; label: string };
 
@@ -51,11 +52,19 @@ export function Header() {
 
   const onNavClick = () => setOpen(false);
 
-  const onLogout = () => {
-    clearSession();
-    onNavClick();
-    router.push("/login");
-    router.refresh();
+  const onLogout = async () => {
+    const token = getAccessToken();
+
+    try {
+      if (token) {
+        await logoutUser(token);
+      }
+    } finally {
+      clearSession();
+      onNavClick();
+      router.push("/login");
+      router.refresh();
+    }
   };
 
   return (
