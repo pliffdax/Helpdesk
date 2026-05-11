@@ -1,0 +1,33 @@
+{
+  "id": "651c7c5a-224b-4a9c-9e3a-dd3c3efb2d70",
+  "name": "Helpdesk Lab 6 Swagger Local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "userEmail",
+      "value": "lab6.user@example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "userPassword",
+      "value": "password123",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-05-11T00:00:00.000Z",
+  "_postman_exported_using": "OpenAI Codex"
+}

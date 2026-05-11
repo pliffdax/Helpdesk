@@ -1,0 +1,260 @@
+{
+  "info": {
+    "_postman_id": "d1e0d77e-d82a-4fdc-994f-df3f05280a8b",
+    "name": "Helpdesk Lab 6 Swagger",
+    "description": "Postman collection for Lab 6: OpenAPI JSON, documented endpoints, auth token flow, and protected endpoint verification.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    }
+  ],
+  "item": [
+    {
+      "name": "Swagger documentation",
+      "item": [
+        {
+          "name": "GET /docs/json - OpenAPI spec",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('OpenAPI document is returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.openapi).to.eql('3.0.3');",
+                  "  pm.expect(json.info.title).to.eql('Helpdesk API');",
+                  "  pm.expect(json.paths['/api/tickets']).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs/json",
+              "host": ["{{baseUrl}}"],
+              "path": ["docs", "json"]
+            }
+          }
+        },
+        {
+          "name": "GET /health - documented health endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Health status is ok', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API through documented routes",
+      "item": [
+        {
+          "name": "GET /api/categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Categories are returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/tickets?page=1&limit=2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Tickets pagination metadata exists', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.meta.page).to.eql(1);",
+                  "  pm.expect(json.meta.limit).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets?page=1&limit=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "2" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201 or 409', function () {",
+                  "  pm.expect([201, 409]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.environment.set('accessToken', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lab 6 User\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"passwordConfirmation\": \"{{userPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Access token is returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.accessToken).to.exist;",
+                  "  pm.environment.set('accessToken', json.data.accessToken);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me - Bearer token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Current user is returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.email).to.eql(pm.environment.get('userEmail'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

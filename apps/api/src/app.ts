@@ -3,6 +3,8 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import { Prisma } from "@prisma/client";
 import { healthRoutes } from "./routes/health";
 import { monitoringRoutes } from "./routes/monitoring";
@@ -11,6 +13,7 @@ import { userRoutes } from "./routes/users";
 import { categoryRoutes } from "./routes/categories";
 import { ticketRoutes } from "./routes/tickets";
 import { env } from "./config/env";
+import { openApiDocument } from "./docs/openapi";
 import { appLogger, logRequestDuration } from "./lib/logger";
 
 const requestStartTimes = new WeakMap<object, number>();
@@ -34,6 +37,21 @@ export function buildApp() {
   app.register(rateLimit, {
     max: 100,
     timeWindow: "1 minute",
+  });
+
+  app.register(swagger, {
+    mode: "static",
+    specification: {
+      document: openApiDocument as never,
+    },
+  });
+
+  app.register(swaggerUi, {
+    routePrefix: "/docs",
+    uiConfig: {
+      docExpansion: "list",
+      deepLinking: true,
+    },
   });
 
   app.register(multipart, {
