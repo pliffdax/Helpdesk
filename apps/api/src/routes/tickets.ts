@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "../lib/prisma";
+import { deleteCachedByPrefix, getCached, setCached } from "../lib/cache";
 import {
   isNonEmptyString,
   isPriority,
@@ -7,60 +8,103 @@ import {
   mapTicket,
 } from "../lib/mappers";
 
+type TicketsListResponse = {
+  data: ReturnType<typeof mapTicket>[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    source: "cache" | "database";
+  };
+};
+
 export async function ticketRoutes(app: FastifyInstance) {
   app.get("/tickets", async (request, reply) => {
     const query = request.query as {
       search?: string;
       status?: string;
       priority?: string;
+      page?: string;
+      limit?: string;
     };
+    const page = parsePositiveInteger(query.page, 1);
+    const limit = Math.min(parsePositiveInteger(query.limit, 10), 50);
+    const where = {
+      status: isStatus(query.status) ? query.status : undefined,
+      priority: isPriority(query.priority) ? query.priority : undefined,
+      OR: isNonEmptyString(query.search)
+        ? [
+            {
+              title: {
+                contains: query.search.trim(),
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              description: {
+                contains: query.search.trim(),
+                mode: "insensitive" as const,
+              },
+            },
+          ]
+        : undefined,
+    };
+    const cacheKey = `tickets:list:${JSON.stringify({
+      search: isNonEmptyString(query.search) ? query.search.trim() : "",
+      status: isStatus(query.status) ? query.status : "",
+      priority: isPriority(query.priority) ? query.priority : "",
+      page,
+      limit,
+    })}`;
+    const cached = getCached<TicketsListResponse>(cacheKey);
 
-    const tickets = await prisma.ticket.findMany({
-      where: {
-        status: isStatus(query.status) ? query.status : undefined,
-        priority: isPriority(query.priority) ? query.priority : undefined,
-        OR: isNonEmptyString(query.search)
-          ? [
-              {
-                title: {
-                  contains: query.search.trim(),
-                  mode: "insensitive",
-                },
-              },
-              {
-                description: {
-                  contains: query.search.trim(),
-                  mode: "insensitive",
-                },
-              },
-            ]
-          : undefined,
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
+    if (cached) {
+      reply.header("x-cache", "HIT");
+      return cached;
+    }
+
+    const [tickets, total] = await prisma.$transaction([
+      prisma.ticket.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+      }),
+      prisma.ticket.count({ where }),
+    ]);
 
-    return {
+    const response: TicketsListResponse = {
       data: tickets.map(mapTicket),
       meta: {
-        total: tickets.length,
+        total,
+        page,
+        limit,
+        totalPages: Math.max(Math.ceil(total / limit), 1),
+        source: "database",
       },
     };
+
+    reply.header("x-cache", "MISS");
+    setCached(cacheKey, response);
+
+    return response;
   });
 
   app.get("/tickets/:id", async (request, reply) => {
@@ -152,6 +196,8 @@ export async function ticketRoutes(app: FastifyInstance) {
       },
     });
 
+    deleteCachedByPrefix("tickets:");
+
     return reply.status(201).send({ data: mapTicket(ticket) });
   });
 
@@ -223,6 +269,8 @@ export async function ticketRoutes(app: FastifyInstance) {
       },
     });
 
+    deleteCachedByPrefix("tickets:");
+
     return { data: mapTicket(ticket) };
   });
 
@@ -236,6 +284,18 @@ export async function ticketRoutes(app: FastifyInstance) {
 
     await prisma.ticket.delete({ where: { id } });
 
+    deleteCachedByPrefix("tickets:");
+
     return reply.status(204).send();
   });
+}
+
+function parsePositiveInteger(value: unknown, fallback: number) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return parsed;
 }

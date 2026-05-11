@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
+import rateLimit from "@fastify/rate-limit";
 import { Prisma } from "@prisma/client";
 import { healthRoutes } from "./routes/health";
 import { monitoringRoutes } from "./routes/monitoring";
@@ -25,6 +27,13 @@ export function buildApp() {
     credentials: true,
     preflight: true,
     optionsSuccessStatus: 204,
+  });
+
+  app.register(helmet);
+
+  app.register(rateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
   });
 
   app.register(multipart, {

@@ -80,5 +80,8 @@ model Ticket {
 
   @@index([creatorId])
   @@index([categoryId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
   @@map("tickets")
 }
