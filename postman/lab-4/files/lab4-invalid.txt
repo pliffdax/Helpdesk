@@ -1,0 +1,2 @@
+This file is intentionally unsupported for Lab 4 upload validation.
+Use it in Postman for the "POST /upload - invalid file type" request.

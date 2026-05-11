@@ -21,6 +21,12 @@ build/
 dist/
 **/dist/
 
+# runtime artifacts
+logs/
+**/logs/
+uploads/
+**/uploads/
+
 # turbo
 .turbo/
 
